@@ -81,7 +81,7 @@ function transformRawDataToSnack(raw: SnackRawData): Snack {
         contentVolume: raw.내용량,
         price: toNumber(raw['가격(원)']),
         score: toNumber(raw.점수),
-        rating: toNumber(raw.평가),
+        description: raw.설명 || '',
         nutrition,
     };
 }

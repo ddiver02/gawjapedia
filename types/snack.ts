@@ -56,10 +56,9 @@ export interface Snack {
     contentVolume: string;         // 내용량 (예: "100g", "500ml")
     price: number;                 // 가격 (원)
     score: number;                 // 종합 점수
-    rating: number;                // 평가 (1-5점)
+    description: string;           // 설명
     nutrition: NutritionInfo;      // 영양 성분 정보
     imageUrl?: string;             // 이미지 URL (선택)
-    description?: string;          // 설명 (선택)
     tags?: string[];               // 태그 (예: ['달콤한', '바삭한'])
 }
 
@@ -76,7 +75,7 @@ export interface SnackRawData {
     내용량: string;
     '가격(원)': string | number;
     점수: string | number;
-    평가: string | number;
+    설명: string;
     '열량(Kcal)': string | number;
     '나트륨(mg)': string | number;
     '탄수화물(g)': string | number;

@@ -128,7 +128,6 @@ export default function SnacksPage() {
                                         <div className="card-body">
                                             <div className="flex items-start justify-between mb-3">
                                                 <span className="badge badge-primary">{snack.category}</span>
-                                                <span className="text-sm text-neutral-500">{snack.rating.toFixed(1)}⭐</span>
                                             </div>
 
                                             <h3 className="font-bold text-lg mb-2 line-clamp-2">{snack.name}</h3>

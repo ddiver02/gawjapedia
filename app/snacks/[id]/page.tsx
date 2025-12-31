@@ -150,17 +150,19 @@ export default function SnackDetailPage() {
                             <div className="card">
                                 <div className="card-body">
                                     <div className="flex items-start justify-between mb-4">
-                                        <div>
+                                        <div className="flex-1">
                                             <div className="flex items-center gap-2 mb-3">
                                                 <span className="badge badge-primary">{snack.category}</span>
-                                                <span className="badge bg-yellow-100 text-yellow-800 border-yellow-300">
-                                                    ⭐ 평가: {snack.rating.toFixed(1)}/5
-                                                </span>
                                             </div>
                                             <h1 className="text-3xl font-display font-bold mb-2">{snack.name}</h1>
-                                            <p className="text-neutral-600">{snack.manufacturer}</p>
+                                            <p className="text-neutral-600 mb-2">{snack.manufacturer}</p>
+                                            {snack.description && (
+                                                <p className="text-neutral-700 bg-neutral-50 p-3 rounded-lg mt-3">
+                                                    {snack.description}
+                                                </p>
+                                            )}
                                         </div>
-                                        <div className="text-right">
+                                        <div className="text-right ml-4">
                                             <div className="text-2xl font-bold text-primary-600">{avgRating.toFixed(1)}⭐</div>
                                             <div className="text-sm text-neutral-500">{totalRatings}개 평가</div>
                                         </div>
