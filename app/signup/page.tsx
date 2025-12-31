@@ -39,12 +39,26 @@ export default function SignUpPage() {
             alert('회원가입이 완료되었습니다! 로그인해주세요.');
             router.push('/login');
         } catch (err: any) {
-            if (err.message?.includes('already registered')) {
+            console.error('Signup error:', err);
+
+            // 이메일 확인 관련 에러 처리
+            if (err.message?.includes('confirmation email') ||
+                err.message?.includes('sending email') ||
+                err.message?.includes('Error sending')) {
+                setError(
+                    '✉️ 이메일 확인 설정 문제\n\n' +
+                    'Supabase에서 이메일 자동 확인을 활성화해주세요:\n' +
+                    '1. Supabase Dashboard 접속\n' +
+                    '2. Authentication > Configuration > Auth Providers\n' +
+                    '3. Email 섹션에서 "Enable Email Autoconfirm" 체크\n' +
+                    '4. Save 클릭'
+                );
+            } else if (err.message?.includes('already registered') ||
+                err.message?.includes('User already registered')) {
                 setError('이미 등록된 이메일입니다.');
             } else {
-                setError('회원가입에 실패했습니다. 다시 시도해주세요.');
+                setError(err.message || '회원가입에 실패했습니다. 다시 시도해주세요.');
             }
-            console.error(err);
         } finally {
             setLoading(false);
         }
