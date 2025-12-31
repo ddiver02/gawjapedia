@@ -151,7 +151,12 @@ export default function SnackDetailPage() {
                                 <div className="card-body">
                                     <div className="flex items-start justify-between mb-4">
                                         <div>
-                                            <span className="badge badge-primary mb-3">{snack.category}</span>
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <span className="badge badge-primary">{snack.category}</span>
+                                                <span className="badge bg-yellow-100 text-yellow-800 border-yellow-300">
+                                                    ⭐ 평가: {snack.rating.toFixed(1)}/5
+                                                </span>
+                                            </div>
                                             <h1 className="text-3xl font-display font-bold mb-2">{snack.name}</h1>
                                             <p className="text-neutral-600">{snack.manufacturer}</p>
                                         </div>
@@ -164,7 +169,6 @@ export default function SnackDetailPage() {
                                     <div className="flex items-center gap-6 text-sm">
                                         <span><strong>내용량:</strong> {snack.contentVolume}</span>
                                         <span><strong>가격:</strong> {snack.price.toLocaleString()}원</span>
-                                        <span><strong>평점:</strong> {snack.rating.toFixed(1)}/5</span>
                                     </div>
                                 </div>
                             </div>
