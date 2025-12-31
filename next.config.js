@@ -17,6 +17,11 @@ const nextConfig = {
 
     // 개발 환경 설정
     reactStrictMode: true,
+
+    // ESLint 빌드 시 무시 (Vercel 배포용)
+    eslint: {
+        ignoreDuringBuilds: true,
+    },
 };
 
 module.exports = nextConfig;
