@@ -74,7 +74,7 @@ export interface SnackRawData {
     분류2?: string;
     분류3?: string;
     내용량: string;
-    price: string | number;
+    '가격(원)': string | number;
     점수: string | number;
     평가: string | number;
     '열량(Kcal)': string | number;
