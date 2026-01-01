@@ -140,8 +140,29 @@ export default function SnacksPage() {
                                                 </span>
                                             </div>
 
-                                            <div className="mt-3 pt-3 border-t border-neutral-100 text-xs text-neutral-500">
-                                                {snack.nutrition.calories}kcal • 단백질 {snack.nutrition.protein}g
+                                            {/* 10점 만점 별점 */}
+                                            <div className="mt-3 pt-3 border-t border-neutral-100">
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="text-xs font-medium text-neutral-600">평가</span>
+                                                    <span className="text-lg font-bold text-yellow-500">
+                                                        {snack.score}/10
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-0.5 mb-2">
+                                                    {[...Array(10)].map((_, i) => (
+                                                        <span
+                                                            key={i}
+                                                            className={`text-sm ${i < snack.score ? 'text-yellow-400' : 'text-neutral-200'}`}
+                                                        >
+                                                            ★
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                                <p className="text-xs text-neutral-500">
+                                                    {snack.score >= 8 ? '✨ 구매 후 만족도 우수' :
+                                                        snack.score >= 4 ? '👍 맛과 가격 균형' :
+                                                            '💭 구매 가치 평가'}
+                                                </p>
                                             </div>
                                         </div>
                                     </Link>
