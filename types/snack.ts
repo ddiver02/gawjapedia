@@ -76,7 +76,7 @@ export interface SnackRawData {
     '가격(원)': string | number;
     점수: string | number;
     설명: string;
-    '열량(Kcal)': string | number;
+    '열량(kcal)': string | number;
     '나트륨(mg)': string | number;
     '탄수화물(g)': string | number;
     '식이섬유(g)': string | number;
@@ -91,7 +91,7 @@ export interface SnackRawData {
     '철분(mg)': string | number;
     '아연(mg)': string | number;
     '마그네슘(mg)': string | number;
-    '비타민A(µg)': string | number;
+    '비타민A(μg)': string | number;
     '비타민B1(mg)': string | number;
     '비타민B2(mg)': string | number;
     '비타민B6(mg)': string | number;
@@ -99,7 +99,7 @@ export interface SnackRawData {
     '비타민E(mg)': string | number;
     '나이아신(mg)': string | number;
     '판토텐산(mg)': string | number;
-    '엽산(µg)': string | number;
+    '엽산(μg)': string | number;
 }
 
 /**

@@ -45,7 +45,7 @@ function toNumber(value: string | number | undefined): number {
  */
 function transformRawDataToSnack(raw: SnackRawData): Snack {
     const nutrition: NutritionInfo = {
-        calories: toNumber(raw['열량(Kcal)']),
+        calories: toNumber(raw['열량(kcal)']),
         sodium: toNumber(raw['나트륨(mg)']),
         carbohydrate: toNumber(raw['탄수화물(g)']),
         dietaryFiber: toNumber(raw['식이섬유(g)']),
@@ -60,7 +60,7 @@ function transformRawDataToSnack(raw: SnackRawData): Snack {
         iron: toNumber(raw['철분(mg)']),
         zinc: toNumber(raw['아연(mg)']),
         magnesium: toNumber(raw['마그네슘(mg)']),
-        vitaminA: toNumber(raw['비타민A(µg)']),
+        vitaminA: toNumber(raw['비타민A(μg)']),
         vitaminB1: toNumber(raw['비타민B1(mg)']),
         vitaminB2: toNumber(raw['비타민B2(mg)']),
         vitaminB6: toNumber(raw['비타민B6(mg)']),
@@ -68,7 +68,7 @@ function transformRawDataToSnack(raw: SnackRawData): Snack {
         vitaminE: toNumber(raw['비타민E(mg)']),
         niacin: toNumber(raw['나이아신(mg)']),
         pantothenicAcid: toNumber(raw['판토텐산(mg)']),
-        folicAcid: toNumber(raw['엽산(µg)']),
+        folicAcid: toNumber(raw['엽산(μg)']),
     };
 
     return {
