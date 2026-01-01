@@ -149,22 +149,63 @@ export default function SnackDetailPage() {
                         <div className="md:col-span-2 space-y-6">
                             <div className="card">
                                 <div className="card-body">
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-3">
-                                                <span className="badge badge-primary">{snack.category}</span>
-                                            </div>
-                                            <h1 className="text-3xl font-display font-bold mb-2">{snack.name}</h1>
-                                            <p className="text-neutral-600 mb-2">{snack.manufacturer}</p>
-                                            {snack.description && (
-                                                <p className="text-neutral-700 bg-neutral-50 p-3 rounded-lg mt-3">
-                                                    {snack.description}
-                                                </p>
-                                            )}
+                                    <div className="mb-4">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <span className="badge badge-primary">{snack.category}</span>
                                         </div>
-                                        <div className="text-right ml-4">
-                                            <div className="text-2xl font-bold text-primary-600">{avgRating.toFixed(1)}⭐</div>
-                                            <div className="text-sm text-neutral-500">{totalRatings}개 평가</div>
+                                        <h1 className="text-3xl font-display font-bold mb-2">{snack.name}</h1>
+                                        <p className="text-neutral-600 mb-2">{snack.manufacturer}</p>
+                                        {snack.description && (
+                                            <p className="text-neutral-700 bg-neutral-50 p-3 rounded-lg mt-3">
+                                                {snack.description}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* 평가 섹션 */}
+                                    <div className="grid grid-cols-2 gap-4 mb-4 p-4 bg-neutral-50 rounded-lg">
+                                        {/* 전문가 평가 */}
+                                        <div className="text-center">
+                                            <div className="text-xs text-neutral-500 mb-1">전문가 평가</div>
+                                            <div className="text-3xl font-bold text-yellow-500 mb-1">
+                                                {snack.score}/10
+                                            </div>
+                                            <div className="flex justify-center gap-0.5">
+                                                {[...Array(10)].map((_, i) => (
+                                                    <span
+                                                        key={i}
+                                                        className={`text-xs ${i < snack.score ? 'text-yellow-400' : 'text-neutral-200'}`}
+                                                    >
+                                                        ★
+                                                    </span>
+                                                ))}
+                                            </div>
+                                            <div className="text-xs text-neutral-500 mt-1">
+                                                {snack.score >= 8 ? '✨ 만족도 우수' :
+                                                    snack.score >= 4 ? '👍 가성비 좋음' :
+                                                        '💭 평가 필요'}
+                                            </div>
+                                        </div>
+
+                                        {/* 사용자 평가 */}
+                                        <div className="text-center border-l border-neutral-200">
+                                            <div className="text-xs text-neutral-500 mb-1">사용자 평가</div>
+                                            <div className="text-3xl font-bold text-primary-600 mb-1">
+                                                {avgRating.toFixed(1)}/5
+                                            </div>
+                                            <div className="flex justify-center gap-0.5">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <span
+                                                        key={i}
+                                                        className={`text-sm ${i < Math.round(avgRating) ? 'text-primary-400' : 'text-neutral-200'}`}
+                                                    >
+                                                        ★
+                                                    </span>
+                                                ))}
+                                            </div>
+                                            <div className="text-xs text-neutral-500 mt-1">
+                                                {totalRatings}개 리뷰
+                                            </div>
                                         </div>
                                     </div>
 
