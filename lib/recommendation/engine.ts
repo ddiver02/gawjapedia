@@ -101,8 +101,8 @@ export function recommendSnacks(
             matchReasons.push('현재 상황에 딱 맞아요');
         }
 
-        if (snack.rating >= 4) {
-            matchReasons.push(`높은 평점 (${snack.rating.toFixed(1)}점)`);
+        if (snack.score >= 8) {
+            matchReasons.push(`높은 평점 (${snack.score}/10)`);
         }
 
         if (preferences.nutrition?.maxCalories &&
