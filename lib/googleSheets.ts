@@ -107,6 +107,13 @@ export async function fetchSnacksFromSheet(sheetName: string = 'Sheet1'): Promis
             throw new Error('GOOGLE_SHEETS_ID 환경 변수가 설정되지 않았습니다.');
         }
 
+        // 디버깅 로그
+        console.log('🔍 Google Sheets 접속 정보:');
+        console.log('- Spreadsheet ID:', spreadsheetId);
+        console.log('- Sheet Name:', sheetName);
+        console.log('- Range:', `${sheetName}!A:AC`);
+        console.log('- Service Account:', process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL);
+
         // 전체 데이터 범위 읽기 (A1부터 끝까지)
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId,
