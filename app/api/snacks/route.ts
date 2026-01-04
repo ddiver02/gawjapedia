@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { fetchSnacksFromSheet, searchSnacks, fetchSnacksByCategory } from '@/lib/googleSheets';
 import { SnackCategory } from '@/types/snack';
 
+// API 라우트를 동적으로 렌더링 (쿼리 파라미터 사용)
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 /**
  * GET /api/snacks
  * 
