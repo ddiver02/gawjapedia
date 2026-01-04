@@ -74,7 +74,13 @@ export async function GET(request: NextRequest) {
         });
 
     } catch (error) {
-        console.error('Snacks API 에러:', error);
+        console.error('❌ Snacks API 에러:', error);
+
+        // 환경 변수 확인 로그 (민감 정보 제외)
+        console.log('환경 변수 확인:');
+        console.log('- GOOGLE_SHEETS_ID:', process.env.GOOGLE_SHEETS_ID ? '✅ 설정됨' : '❌ 없음');
+        console.log('- GOOGLE_SERVICE_ACCOUNT_EMAIL:', process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ? '✅ 설정됨' : '❌ 없음');
+        console.log('- GOOGLE_PRIVATE_KEY:', process.env.GOOGLE_PRIVATE_KEY ? '✅ 설정됨' : '❌ 없음');
 
         return NextResponse.json(
             {
@@ -82,6 +88,7 @@ export async function GET(request: NextRequest) {
                 error: {
                     message: error instanceof Error ? error.message : '간식 목록을 불러오는 데 실패했습니다',
                     code: 'SNACKS_FETCH_ERROR',
+                    details: error instanceof Error ? error.stack : undefined,
                 },
             },
             { status: 500 }
