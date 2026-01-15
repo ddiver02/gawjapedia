@@ -6,8 +6,14 @@
  * Google Sheets의 간식 데이터를 Supabase product 테이블로 마이그레이션합니다.
  * 
  * 사용법:
- * npx ts-node scripts/migrate-sheets-to-supabase.ts
+ * npx tsx scripts/migrate-sheets-to-supabase.ts
  */
+
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+
+// .env.local 로드
+dotenv.config({ path: path.join(__dirname, '..', '.env.local') });
 
 import { createClient } from '@supabase/supabase-js';
 import { fetchSnacksFromSheet } from '../lib/googleSheets';
