@@ -1,11 +1,5 @@
-import { Snack, NutritionInfo } from '@/types/snack';
-import {
-    UserPreferences,
-    TastePreference,
-    TPOContext,
-    ConsumptionMode,
-    NutritionPreference,
-} from './types';
+import type { NutritionInfo, Product } from '@/types/product';
+import type { TPO, ConsumptionMode, NutritionPreferences } from './types';
 
 /**
  * 영양 균형 점수 계산 (0-100)
@@ -129,7 +123,7 @@ export function calculateNutritionScore(
  * @returns 맛 매칭 점수 (0-100)
  */
 export function calculateTasteMatchScore(
-    snack: Snack,
+    snack: Product,
     preferences: TastePreference[]
 ): number {
     if (preferences.length === 0) {
@@ -187,7 +181,7 @@ export function calculateTasteMatchScore(
  * @param tpo - TPO 컨텍스트
  * @returns TPO 적합도 점수 (0-100)
  */
-export function calculateTPOScore(snack: Snack, tpo?: TPOContext): number {
+export function calculateTPOScore(snack: Product, tpo?: TPOContext): number {
     if (!tpo) {
         return 50; // TPO 정보 없으면 중립
     }
@@ -274,7 +268,7 @@ export function calculateTPOScore(snack: Snack, tpo?: TPOContext): number {
  * @returns 소비 모드 점수 (0-100)
  */
 export function calculateConsumptionModeScore(
-    snack: Snack,
+    snack: Product,
     mode?: ConsumptionMode
 ): number {
     if (!mode) {
