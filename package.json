@@ -9,7 +9,8 @@
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "migrate:demo": "ts-node scripts/migrate-sheets-to-supabase.ts"
   },
   "dependencies": {
     "next": "^14.2.0",
