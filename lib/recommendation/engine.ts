@@ -1,4 +1,4 @@
-import { Snack } from '@/types/snack';
+import { Product } from '@/types/product';
 import {
     UserPreferences,
     RecommendationResult,
@@ -21,7 +21,7 @@ import {
  * 추천 알고리즘:
  * totalScore = w1 * nutritionScore + w2 * tasteScore + w3 * tpoScore + w4 * consumptionScore
  * 
- * @param snacks - 전체 간식 목록
+ * @param products - 전체 제품 목록
  * @param preferences - 사용자 선호도
  * @param weights - 가중치 설정 (선택, 기본값 사용)
  * @param limit - 반환할 최대 결과 수 (기본: 10)
@@ -36,19 +36,19 @@ import {
  *   nutrition: { maxCalories: 300 },
  * };
  * 
- * const recommendations = await recommendSnacks(allSnacks, userPrefs);
+ * const recommendations = await recommendSnacks(allProducts, userPrefs);
  * console.log(`추천 1순위: ${recommendations[0].snackName} (점수: ${recommendations[0].totalScore})`);
  * ```
  */
 export function recommendSnacks(
-    snacks: Snack[],
+    products: Product[],
     preferences: UserPreferences,
     weights: RecommendationWeights = DEFAULT_WEIGHTS,
     limit: number = 10
 ): RecommendationResult[] {
 
     // 1. 필터링: 피해야 할 카테고리 제외
-    let filteredSnacks = snacks;
+    let filteredSnacks = products;
 
     if (preferences.avoidCategories && preferences.avoidCategories.length > 0) {
         filteredSnacks = filteredSnacks.filter(
@@ -120,7 +120,7 @@ export function recommendSnacks(
 
         return {
             snackId: snack.id,
-            snackName: snack.name,
+            snackName: snack.title,
             totalScore: Math.round(totalScore * 100) / 100,
             scores: {
                 nutritionBalance: Math.round(nutritionScore),
@@ -142,12 +142,12 @@ export function recommendSnacks(
 /**
  * 간단 추천: 맛 선호도만으로 추천
  * 
- * @param snacks - 전체 간식 목록
+ * @param products - 전체 간식 목록
  * @param tastes - 선호 맛 목록
  * @param limit - 반환할 최대 결과 수
  */
 export function recommendByTaste(
-    snacks: Snack[],
+    products: Product[],
     tastes: string[],
     limit: number = 5
 ): RecommendationResult[] {
@@ -163,18 +163,18 @@ export function recommendByTaste(
         consumptionMode: 0.1,
     };
 
-    return recommendSnacks(snacks, preferences, weights, limit);
+    return recommendSnacks(products, preferences, weights, limit);
 }
 
 /**
  * 건강 중심 추천: 영양성분 기준으로 추천
  * 
- * @param snacks - 전체 간식 목록
+ * @param products - 전체 간식 목록
  * @param maxCalories - 최대 칼로리
  * @param limit - 반환할 최대 결과 수
  */
 export function recommendHealthy(
-    snacks: Snack[],
+    products: Product[],
     maxCalories: number = 200,
     limit: number = 5
 ): RecommendationResult[] {
@@ -197,19 +197,19 @@ export function recommendHealthy(
         consumptionMode: 0.1,
     };
 
-    return recommendSnacks(snacks, preferences, weights, limit);
+    return recommendSnacks(products, preferences, weights, limit);
 }
 
 /**
  * 상황별 추천: TPO 기준으로 추천
  * 
- * @param snacks - 전체 간식 목록
+ * @param products - 전체 간식 목록
  * @param time - 시간대
  * @param place - 장소
  * @param limit - 반환할 최대 결과 수
  */
 export function recommendByContext(
-    snacks: Snack[],
+    products: Product[],
     time?: string,
     place?: string,
     limit: number = 5
@@ -230,24 +230,24 @@ export function recommendByContext(
         consumptionMode: 0.1,
     };
 
-    return recommendSnacks(snacks, preferences, weights, limit);
+    return recommendSnacks(products, preferences, weights, limit);
 }
 
 /**
  * 유사 간식 찾기
  * 특정 간식과 비슷한 영양성분/카테고리를 가진 간식 추천
  * 
- * @param snacks - 전체 간식 목록
+ * @param products - 전체 간식 목록
  * @param targetSnack - 기준 간식
  * @param limit - 반환할 최대 결과 수
  */
 export function findSimilarSnacks(
-    snacks: Snack[],
-    targetSnack: Snack,
+    products: Product[],
+    targetSnack: Product,
     limit: number = 5
-): Snack[] {
+): Product[] {
     // 자기 자신 제외
-    const otherSnacks = snacks.filter(s => s.id !== targetSnack.id);
+    const otherSnacks = products.filter(s => s.id !== targetSnack.id);
 
     // 유사도 계산
     const scored = otherSnacks.map(snack => {
