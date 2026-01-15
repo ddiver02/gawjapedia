@@ -5,18 +5,16 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import { Snack } from '@/types/snack';
+import { Product } from '@/types/product';
 import { useAuth } from '@/lib/hooks/useAuth';
 
-interface Rating {
-    id: string;
-    rating: number;
-    review: string | null;
+interface ProductComment {
+    comment_id: string;
+    comment: string;
+    agree: number;
+    disagree: number;
     created_at: string;
-    profiles: {
-        username: string | null;
-        full_name: string | null;
-    };
+    user_id: string;
 }
 
 export default function SnackDetailPage() {
@@ -24,36 +22,32 @@ export default function SnackDetailPage() {
     const id = params.id as string;
     const { user } = useAuth();
 
-    const [snack, setSnack] = useState<Snack | null>(null);
-    const [ratings, setRatings] = useState<Rating[]>([]);
-    const [avgRating, setAvgRating] = useState(0);
-    const [totalRatings, setTotalRatings] = useState(0);
+    const [product, setProduct] = useState<Product | null>(null);
+    const [comments, setComments] = useState<ProductComment[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    // 리뷰 작성
-    const [showReviewForm, setShowReviewForm] = useState(false);
-    const [newRating, setNewRating] = useState(5);
-    const [newReview, setNewReview] = useState('');
+    // 이중 평점 작성
+    const [showRatingForm, setShowRatingForm] = useState(false);
+    const [priceRating, setPriceRating] = useState(3);
+    const [qualityRating, setQualityRating] = useState(3);
     const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
-        fetchSnackDetail();
+        fetchProductDetail();
     }, [id]);
 
-    const fetchSnackDetail = async () => {
+    const fetchProductDetail = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/snacks/${id}`);
+            const response = await fetch(`/api/products/${id}`);
             const data = await response.json();
 
             if (data.success) {
-                setSnack(data.data.snack);
-                setAvgRating(data.data.ratings.averageRating || 0);
-                setTotalRatings(data.data.ratings.totalRatings || 0);
-                setRatings(data.data.recentReviews || []);
+                setProduct(data.data.product);
+                setComments(data.data.comments || []);
             } else {
-                setError('간식 정보를 찾을 수 없습니다.');
+                setError('제품 정보를 찾을 수 없습니다.');
             }
         } catch (err) {
             setError('서버 오류가 발생했습니다.');
@@ -63,8 +57,7 @@ export default function SnackDetailPage() {
         }
     };
 
-    const handleSubmitReview = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmitRating = async () => {
         if (!user) {
             alert('로그인이 필요합니다.');
             return;
@@ -72,26 +65,20 @@ export default function SnackDetailPage() {
 
         setSubmitting(true);
         try {
-            const response = await fetch('/api/ratings', {
+            const response = await fetch(`/api/products/${id}/ratings`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    snackId: id,
-                    rating: newRating,
-                    review: newReview || undefined,
-                }),
+                body: JSON.stringify({ priceRating, qualityRating }),
             });
 
             const data = await response.json();
 
             if (data.success) {
-                alert('리뷰가 등록되었습니다!');
-                setShowReviewForm(false);
-                setNewRating(5);
-                setNewReview('');
-                fetchSnackDetail();
+                alert('평점이 저장되었습니다!');
+                setShowRatingForm(false);
+                fetchProductDetail(); // 새로고침
             } else {
-                alert(data.error?.message || '리뷰 등록에 실패했습니다.');
+                alert(data.error.message || '평점 저장에 실패했습니다.');
             }
         } catch (err) {
             alert('서버 오류가 발생했습니다.');
@@ -113,15 +100,15 @@ export default function SnackDetailPage() {
         );
     }
 
-    if (error || !snack) {
+    if (error || !product) {
         return (
             <div className="min-h-screen flex flex-col">
                 <Header />
                 <main className="flex-1 flex items-center justify-center">
                     <div className="text-center">
-                        <p className="text-red-600 text-lg mb-4">{error}</p>
+                        <h2 className="text-2xl font-bold text-red-600 mb-4">{error || '제품을 찾을 수 없습니다'}</h2>
                         <Link href="/snacks" className="btn btn-primary">
-                            간식 목록으로
+                            목록으로 돌아가기
                         </Link>
                     </div>
                 </main>
@@ -134,227 +121,212 @@ export default function SnackDetailPage() {
         <div className="min-h-screen flex flex-col">
             <Header />
 
-            <main className="flex-1 bg-neutral-50 py-8">
-                <div className="container">
+            <main className="flex-1 bg-neutral-50">
+                <div className="container py-8">
                     {/* 뒤로 가기 */}
-                    <Link href="/snacks" className="inline-flex items-center gap-2 text-neutral-600 hover:text-primary-600 mb-6">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
-                        목록으로
+                    <Link href="/snacks" className="inline-flex items-center text-neutral-600 hover:text-primary-600 mb-6">
+                        ← 목록으로 돌아가기
                     </Link>
 
-                    <div className="grid md:grid-cols-3 gap-8">
-                        {/* 왼쪽: 기본 정보 */}
-                        <div className="md:col-span-2 space-y-6">
-                            <div className="card">
-                                <div className="card-body">
-                                    <div className="mb-4">
-                                        <div className="flex items-center gap-2 mb-3">
-                                            <span className="badge badge-primary">{snack.category}</span>
-                                        </div>
-                                        <h1 className="text-3xl font-display font-bold mb-2">{snack.name}</h1>
-                                        <p className="text-neutral-600 mb-2">{snack.manufacturer}</p>
-                                        {snack.description && (
-                                            <p className="text-neutral-700 bg-neutral-50 p-3 rounded-lg mt-3">
-                                                {snack.description}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    {/* 평가 섹션 */}
-                                    <div className="grid grid-cols-2 gap-4 mb-4 p-4 bg-neutral-50 rounded-lg">
-                                        {/* 전문가 평가 */}
-                                        <div className="text-center">
-                                            <div className="text-xs text-neutral-500 mb-1">전문가 평가</div>
-                                            <div className="text-3xl font-bold text-yellow-500 mb-1">
-                                                {snack.score}/10
-                                            </div>
-                                            <div className="flex justify-center gap-0.5">
-                                                {[...Array(10)].map((_, i) => (
-                                                    <span
-                                                        key={i}
-                                                        className={`text-xs ${i < snack.score ? 'text-yellow-400' : 'text-neutral-200'}`}
-                                                    >
-                                                        ★
-                                                    </span>
-                                                ))}
-                                            </div>
-                                            <div className="text-xs text-neutral-500 mt-1">
-                                                {snack.score >= 8 ? '✨ 만족도 우수' :
-                                                    snack.score >= 4 ? '👍 가성비 좋음' :
-                                                        '💭 평가 필요'}
-                                            </div>
-                                        </div>
-
-                                        {/* 사용자 평가 */}
-                                        <div className="text-center border-l border-neutral-200">
-                                            <div className="text-xs text-neutral-500 mb-1">사용자 평가</div>
-                                            <div className="text-3xl font-bold text-primary-600 mb-1">
-                                                {avgRating.toFixed(1)}/5
-                                            </div>
-                                            <div className="flex justify-center gap-0.5">
-                                                {[...Array(5)].map((_, i) => (
-                                                    <span
-                                                        key={i}
-                                                        className={`text-sm ${i < Math.round(avgRating) ? 'text-primary-400' : 'text-neutral-200'}`}
-                                                    >
-                                                        ★
-                                                    </span>
-                                                ))}
-                                            </div>
-                                            <div className="text-xs text-neutral-500 mt-1">
-                                                {totalRatings}개 리뷰
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-6 text-sm">
-                                        <span><strong>내용량:</strong> {snack.contentVolume}</span>
-                                        <span><strong>가격:</strong> {snack.price.toLocaleString()}원</span>
+                    <div className="grid lg:grid-cols-3 gap-8">
+                        {/* 왼쪽: 제품 기본 정보 */}
+                        <div className="lg:col-span-2">
+                            <div className="bg-white rounded-xl shadow-sm p-8">
+                                {/* 헤더 */}
+                                <div className="flex items-start justify-between mb-6">
+                                    <div className="flex-1">
+                                        <span className="badge badge-primary mb-2">{product.category}</span>
+                                        <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
+                                        <p className="text-lg text-neutral-600">{product.manufacturer}</p>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* 영양 정보 */}
-                            <div className="card">
-                                <div className="card-body">
-                                    <h2 className="text-2xl font-bold mb-4">영양 정보</h2>
-
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                        <div className="bg-neutral-50 p-4 rounded-lg">
-                                            <div className="text-sm text-neutral-600">열량</div>
-                                            <div className="text-lg font-bold">{snack.nutrition.calories} kcal</div>
-                                        </div>
-                                        <div className="bg-neutral-50 p-4 rounded-lg">
-                                            <div className="text-sm text-neutral-600">탄수화물</div>
-                                            <div className="text-lg font-bold">{snack.nutrition.carbohydrate} g</div>
-                                        </div>
-                                        <div className="bg-neutral-50 p-4 rounded-lg">
-                                            <div className="text-sm text-neutral-600">단백질</div>
-                                            <div className="text-lg font-bold">{snack.nutrition.protein} g</div>
-                                        </div>
-                                        <div className="bg-neutral-50 p-4 rounded-lg">
-                                            <div className="text-sm text-neutral-600">지방</div>
-                                            <div className="text-lg font-bold">{snack.nutrition.fat} g</div>
-                                        </div>
-                                        <div className="bg-neutral-50 p-4 rounded-lg">
-                                            <div className="text-sm text-neutral-600">당류</div>
-                                            <div className="text-lg font-bold">{snack.nutrition.sugars} g</div>
-                                        </div>
-                                        <div className="bg-neutral-50 p-4 rounded-lg">
-                                            <div className="text-sm text-neutral-600">나트륨</div>
-                                            <div className="text-lg font-bold">{snack.nutrition.sodium} mg</div>
-                                        </div>
+                                {/* 전문가 평가 (10점 만점) */}
+                                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h3 className="font-bold text-lg">🏆 전문가 평가</h3>
+                                        <span className="text-3xl font-bold text-yellow-600">{product.score}/10</span>
                                     </div>
-
-                                    <details className="mt-4">
-                                        <summary className="cursor-pointer text-primary-600 font-semibold">
-                                            상세 영양 정보 보기
-                                        </summary>
-                                        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                                            <div>식이섬유: {snack.nutrition.dietaryFiber}g</div>
-                                            <div>포화지방: {snack.nutrition.saturatedFat}g</div>
-                                            <div>트랜스지방: {snack.nutrition.transFat}g</div>
-                                            <div>콜레스테롤: {snack.nutrition.cholesterol}mg</div>
-                                            <div>칼슘: {snack.nutrition.calcium}mg</div>
-                                            <div>철분: {snack.nutrition.iron}mg</div>
-                                            <div>비타민C: {snack.nutrition.vitaminC}mg</div>
-                                            <div>비타민E: {snack.nutrition.vitaminE}mg</div>
-                                        </div>
-                                    </details>
+                                    <div className="flex items-center gap-1 mb-2">
+                                        {[...Array(10)].map((_, i) => (
+                                            <span
+                                                key={i}
+                                                className={`text-xl ${i < product.score ? 'text-yellow-400' : 'text-neutral-300'}`}
+                                            >
+                                                ★
+                                            </span>
+                                        ))}
+                                    </div>
+                                    <p className="text-sm text-neutral-600">
+                                        {product.score >= 8 ? '✨ 구매 후 만족도 우수' :
+                                            product.score >= 4 ? '👍 맛과 가격 균형' :
+                                                '💭 구매 가치 평가'}
+                                    </p>
                                 </div>
-                            </div>
 
-                            {/* 리뷰 섹션 */}
-                            <div className="card">
-                                <div className="card-body">
+                                {/* 사용자 평가 (5점 만점 이중 평점) */}
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
                                     <div className="flex items-center justify-between mb-4">
-                                        <h2 className="text-2xl font-bold">리뷰</h2>
+                                        <h3 className="font-bold text-lg">⭐ 사용자 평가</h3>
                                         {user && (
                                             <button
-                                                onClick={() => setShowReviewForm(!showReviewForm)}
-                                                className="btn btn-primary"
+                                                onClick={() => setShowRatingForm(!showRatingForm)}
+                                                className="btn btn-sm btn-primary"
                                             >
-                                                리뷰 작성
+                                                평가하기
                                             </button>
                                         )}
                                     </div>
 
-                                    {showReviewForm && (
-                                        <form onSubmit={handleSubmitReview} className="mb-6 p-4 bg-neutral-50 rounded-lg">
-                                            <div className="mb-4">
-                                                <label className="block text-sm font-medium mb-2">평점</label>
-                                                <div className="flex gap-2">
-                                                    {[1, 2, 3, 4, 5].map((star) => (
-                                                        <button
-                                                            key={star}
-                                                            type="button"
-                                                            onClick={() => setNewRating(star)}
-                                                            className={`text-2xl ${star <= newRating ? 'text-yellow-400' : 'text-neutral-300'}`}
-                                                        >
-                                                            ★
-                                                        </button>
-                                                    ))}
-                                                </div>
+                                    <div className="grid grid-cols-2 gap-4 mb-4">
+                                        {/* 가격 평점 */}
+                                        <div className="bg-white rounded-lg p-4">
+                                            <div className="text-sm text-neutral-600 mb-1">가격 대비 만족도</div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-2xl font-bold text-blue-600">
+                                                    {product.avgPriceRating?.toFixed(1) || '0.0'}
+                                                </span>
+                                                <span className="text-blue-400">★</span>
                                             </div>
-                                            <div className="mb-4">
-                                                <label className="block text-sm font-medium mb-2">리뷰 (선택)</label>
-                                                <textarea
-                                                    value={newReview}
-                                                    onChange={(e) => setNewReview(e.target.value)}
-                                                    className="input"
-                                                    rows={3}
-                                                    placeholder="이 간식에 대한 생각을 알려주세요..."
-                                                />
-                                            </div>
-                                            <button type="submit" disabled={submitting} className="btn btn-primary">
-                                                {submitting ? '등록 중...' : '리뷰 등록'}
-                                            </button>
-                                        </form>
-                                    )}
+                                        </div>
 
-                                    {ratings.length === 0 ? (
-                                        <p className="text-neutral-500 text-center py-8">아직 리뷰가 없습니다.</p>
-                                    ) : (
-                                        <div className="space-y-4">
-                                            {ratings.map((rating) => (
-                                                <div key={rating.id} className="border-b border-neutral-200 pb-4 last:border-0">
-                                                    <div className="flex items-center justify-between mb-2">
-                                                        <div className="font-semibold">
-                                                            {rating.profiles.username || rating.profiles.full_name || '익명'}
-                                                        </div>
-                                                        <div className="text-yellow-400">
-                                                            {'★'.repeat(rating.rating)}
-                                                            {'☆'.repeat(5 - rating.rating)}
-                                                        </div>
-                                                    </div>
-                                                    {rating.review && (
-                                                        <p className="text-neutral-700">{rating.review}</p>
-                                                    )}
-                                                    <div className="text-xs text-neutral-500 mt-1">
-                                                        {new Date(rating.created_at).toLocaleDateString()}
+                                        {/* 품질 평점 */}
+                                        <div className="bg-white rounded-lg p-4">
+                                            <div className="text-sm text-neutral-600 mb-1">맛/품질 만족도</div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-2xl font-bold text-blue-600">
+                                                    {product.avgQualityRating?.toFixed(1) || '0.0'}
+                                                </span>
+                                                <span className="text-blue-400">★</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <p className="text-sm text-neutral-600">
+                                        총 {product.totalRatings || 0}명이 평가했습니다
+                                    </p>
+
+                                    {/* 평점 입력 폼 */}
+                                    {showRatingForm && (
+                                        <div className="mt-4 pt-4 border-t border-blue-200">
+                                            <div className="space-y-4">
+                                                {/* 가격 평점 */}
+                                                <div>
+                                                    <label className="block text-sm font-medium mb-2">
+                                                        가격 대비 만족도 (1-5)
+                                                    </label>
+                                                    <div className="flex items-center gap-2">
+                                                        {[1, 2, 3, 4, 5].map((value) => (
+                                                            <button
+                                                                key={value}
+                                                                onClick={() => setPriceRating(value)}
+                                                                className={`text-3xl ${value <= priceRating ? 'text-blue-400' : 'text-neutral-300'}`}
+                                                            >
+                                                                ★
+                                                            </button>
+                                                        ))}
+                                                        <span className="ml-2 text-lg font-bold">{priceRating}</span>
                                                     </div>
                                                 </div>
-                                            ))}
+
+                                                {/* 품질 평점 */}
+                                                <div>
+                                                    <label className="block text-sm font-medium mb-2">
+                                                        맛/품질 만족도 (1-5)
+                                                    </label>
+                                                    <div className="flex items-center gap-2">
+                                                        {[1, 2, 3, 4, 5].map((value) => (
+                                                            <button
+                                                                key={value}
+                                                                onClick={() => setQualityRating(value)}
+                                                                className={`text-3xl ${value <= qualityRating ? 'text-blue-400' : 'text-neutral-300'}`}
+                                                            >
+                                                                ★
+                                                            </button>
+                                                        ))}
+                                                        <span className="ml-2 text-lg font-bold">{qualityRating}</span>
+                                                    </div>
+                                                </div>
+
+                                                <button
+                                                    onClick={handleSubmitRating}
+                                                    disabled={submitting}
+                                                    className="btn btn-primary w-full"
+                                                >
+                                                    {submitting ? '저장 중...' : '평점 저장'}
+                                                </button>
+                                            </div>
                                         </div>
                                     )}
+                                </div>
+
+                                {/* 설명 */}
+                                {product.description && (
+                                    <div className="mb-6">
+                                        <h3 className="font-bold text-lg mb-3">제품 설명</h3>
+                                        <p className="text-neutral-700">{product.description}</p>
+                                    </div>
+                                )}
+
+                                {/* 영양 정보 */}
+                                <div>
+                                    <h3 className="font-bold text-lg mb-4">영양 정보</h3>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                        <div className="bg-neutral-50 rounded-lg p-4">
+                                            <div className="text-sm text-neutral-600">열량</div>
+                                            <div className="text-lg font-bold">{product.nutrition.calories} kcal</div>
+                                        </div>
+                                        <div className="bg-neutral-50 rounded-lg p-4">
+                                            <div className="text-sm text-neutral-600">탄수화물</div>
+                                            <div className="text-lg font-bold">{product.nutrition.carbohydrate} g</div>
+                                        </div>
+                                        <div className="bg-neutral-50 rounded-lg p-4">
+                                            <div className="text-sm text-neutral-600">단백질</div>
+                                            <div className="text-lg font-bold">{product.nutrition.protein} g</div>
+                                        </div>
+                                        <div className="bg-neutral-50 rounded-lg p-4">
+                                            <div className="text-sm text-neutral-600">지방</div>
+                                            <div className="text-lg font-bold">{product.nutrition.fat} g</div>
+                                        </div>
+                                        <div className="bg-neutral-50 rounded-lg p-4">
+                                            <div className="text-sm text-neutral-600">나트륨</div>
+                                            <div className="text-lg font-bold">{product.nutrition.sodium} mg</div>
+                                        </div>
+                                        <div className="bg-neutral-50 rounded-lg p-4">
+                                            <div className="text-sm text-neutral-600">당류</div>
+                                            <div className="text-lg font-bold">{product.nutrition.sugars} g</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* 오른쪽: 액션 */}
-                        <div className="space-y-6">
-                            <div className="card sticky top-24">
-                                <div className="card-body">
-                                    <h3 className="font-bold text-lg mb-4">추천 받기</h3>
-                                    <p className="text-sm text-neutral-600 mb-4">
-                                        이 간식과 비슷한 다른 간식을 찾아보세요!
-                                    </p>
-                                    <Link href="/recommendations" className="btn btn-primary w-full">
-                                        추천 받기
-                                    </Link>
-                                </div>
+                        {/* 오른쪽: 제품 상세 */}
+                        <div>
+                            <div className="bg-white rounded-xl shadow-sm p-6 sticky top-8">
+                                <h3 className="font-bold text-lg mb-4">제품 정보</h3>
+                                <dl className="space-y-3">
+                                    <div>
+                                        <dt className="text-sm text-neutral-600">가격</dt>
+                                        <dd className="text-2xl font-bold text-primary-600">
+                                            {product.price.toLocaleString()}원
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt className="text-sm text-neutral-600">내용량</dt>
+                                        <dd className="font-medium">{product.contentVolume}</dd>
+                                    </div>
+                                    <div>
+                                        <dt className="text-sm text-neutral-600">제조사</dt>
+                                        <dd className="font-medium">{product.manufacturer}</dd>
+                                    </div>
+                                    {product.maker && (
+                                        <div>
+                                            <dt className="text-sm text-neutral-600">제조원</dt>
+                                            <dd className="font-medium">{product.maker}</dd>
+                                        </div>
+                                    )}
+                                </dl>
                             </div>
                         </div>
                     </div>
