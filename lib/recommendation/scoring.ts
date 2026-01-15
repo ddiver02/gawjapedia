@@ -1,5 +1,5 @@
 import type { NutritionInfo, Product } from '@/types/product';
-import type { TPO, ConsumptionMode, NutritionPreferences } from './types';
+import type { TPOContext, ConsumptionMode, NutritionPreference, TastePreference } from './types';
 
 /**
  * 영양 균형 점수 계산 (0-100)
