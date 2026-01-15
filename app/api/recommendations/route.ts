@@ -1,6 +1,7 @@
+```
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { fetchSnacksFromSheet } from '@/lib/googleSheets';
+import { getAllProducts } from '@/lib/supabase/products';
 import { recommendSnacks } from '@/lib/recommendation/engine';
 import { UserPreferences } from '@/lib/recommendation/types';
 
@@ -34,44 +35,44 @@ const RecommendationRequestSchema = z.object({
  * 
  * 요청 본문:
  * ```json
- * {
- *   "tastes": ["단맛", "바삭한"],
- *   "tpo": {
+    * {
+    *   "tastes": ["단맛", "바삭한"],
+    *   "tpo": {
  *     "time": "간식시간",
- *     "place": "사무실"
+    *     "place": "사무실"
  *   },
- *   "consumptionMode": "빠른섭취",
- *   "nutrition": {
- *     "maxCalories": 300
- *   },
- *   "limit": 10
- * }
+ * "consumptionMode": "빠른섭취",
+ * "nutrition": {
+ * "maxCalories": 300
+        *   },
+ * "limit": 10
+    * }
  * ```
  * 
  * 응답:
  * ```json
- * {
- *   "success": true,
- *   "data": {
+    * {
+    *   "success": true,
+    *   "data": {
  *     "recommendations": [
- *       {
+        *       {
  *         "snackId": "1",
- *         "snackName": "초코칩 쿠키",
- *         "totalScore": 85.6,
- *         "scores": {
+        *         "snackName": "초코칩 쿠키",
+        *         "totalScore": 85.6,
+        *         "scores": {
  *           "nutritionBalance": 75,
- *           "tasteMatch": 90,
- *           "tpoScore": 80,
- *           "consumptionMode": 85
+        *           "tasteMatch": 90,
+        *           "tpoScore": 80,
+        *           "consumptionMode": 85
  *         },
- *         "matchReasons": [
- *           "선호하는 맛과 잘 맞아요",
- *           "현재 상황에 딱 맞아요"
- *         ]
- *       }
+ * "matchReasons": [
+ * "선호하는 맛과 잘 맞아요",
+ * "현재 상황에 딱 맞아요"
+    *         ]
+    *       }
  *     ],
- *     "totalSnacksEvaluated": 150
- *   }
+ * "totalSnacksEvaluated": 150
+    *   }
  * }
  * ```
  */
@@ -109,17 +110,17 @@ export async function POST(request: NextRequest) {
             avoidCategories,
         };
 
-        // 전체 간식 목록 가져오기
-        const allSnacks = await fetchSnacksFromSheet();
+        // 전체 제품 목록 가져오기
+        const allProducts = await getAllProducts();
 
         // 추천 알고리즘 실행
-        const recommendations = recommendSnacks(allSnacks, preferences, undefined, limit);
+        const recommendations = recommendSnacks(allProducts, preferences, undefined, limit);
 
         return NextResponse.json({
             success: true,
             data: {
                 recommendations,
-                totalSnacksEvaluated: allSnacks.length,
+                totalSnacksEvaluated: allProducts.length,
                 preferences: {
                     tastes,
                     tpo,
@@ -171,14 +172,14 @@ export async function GET(request: NextRequest) {
             } : undefined,
         };
 
-        const allSnacks = await fetchSnacksFromSheet();
-        const recommendations = recommendSnacks(allSnacks, preferences, undefined, limit);
+        const allProducts = await getAllProducts();
+        const recommendations = recommendSnacks(allProducts, preferences, undefined, limit);
 
         return NextResponse.json({
             success: true,
             data: {
                 recommendations,
-                totalSnacksEvaluated: allSnacks.length,
+                totalSnacksEvaluated: allProducts.length,
             },
         });
 
