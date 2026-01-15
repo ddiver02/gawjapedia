@@ -91,19 +91,19 @@ export function calculateNutritionScore(
     // 6. 지방 평가
     if (preferences?.preferLowFat) {
         if (nutrition.fat <= 5) {
-            totalScore += 10;
+            score += 10;
             reasons.push('저지방');
         }
     }
 
     // 트랜스지방 0이면 가점
     if (nutrition.transFat === 0) {
-        totalScore += 5;
+        score += 5;
     }
 
     // 6. 식이섬유 보너스
     if (nutrition.dietaryFiber > 3) {
-        totalScore += 10;
+        score += 10;
     }
 
     // 7. 비타민/미네랄 보너스
@@ -115,9 +115,9 @@ export function calculateNutritionScore(
     if ((nutrition.zinc ?? 0) > 1) vitaminScore += 2;
     if ((nutrition.magnesium ?? 0) > 30) vitaminScore += 2;
 
-    totalScore += Math.min(vitaminScore, 10); // 최대 10점
+    score += Math.min(vitaminScore, 10); // 최대 10점
 
-    return Math.min(Math.max(totalScore, 0), 100);
+    return Math.min(Math.max(score, 0), 100);
 }
 
 /**
