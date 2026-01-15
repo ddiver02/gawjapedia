@@ -4,24 +4,24 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import { Snack, SnackCategory } from '@/types/snack';
+import { Product, ProductCategory } from '@/types/product';
 
 export default function SnacksPage() {
-    const [snacks, setSnacks] = useState<Snack[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState<SnackCategory | ''>('');
+    const [selectedCategory, setSelectedCategory] = useState<ProductCategory | ''>('');
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
-    const categories: (SnackCategory | '')[] = ['', '과자', '초콜릿', '캔디', '젤리', '건과류', '아이스크림', '음료', '기타'];
+    const categories: (ProductCategory | '')[] = ['', '과자', '초콜릿', '캔디', '젤리', '건과류', '아이스크림', '음료', '기타'];
 
     useEffect(() => {
-        fetchSnacks();
+        fetchProducts();
     }, [page, selectedCategory, searchQuery]);
 
-    const fetchSnacks = async () => {
+    const fetchProducts = async () => {
         setLoading(true);
         setError('');
 
@@ -33,14 +33,14 @@ export default function SnacksPage() {
                 ...(searchQuery && { search: searchQuery }),
             });
 
-            const response = await fetch(`/api/snacks?${params}`);
+            const response = await fetch(`/api/products?${params}`);
             const data = await response.json();
 
             if (data.success) {
-                setSnacks(data.data.snacks);
+                setProducts(data.data.products);
                 setTotalPages(data.data.pagination.totalPages);
             } else {
-                setError('간식 목록을 불러오는 데 실패했습니다.');
+                setError('제품 목록을 불러오는 데 실패했습니다.');
             }
         } catch (err) {
             setError('서버 오류가 발생했습니다.');
@@ -53,7 +53,7 @@ export default function SnacksPage() {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         setPage(1);
-        fetchSnacks();
+        fetchProducts();
     };
 
     return (
@@ -84,7 +84,7 @@ export default function SnacksPage() {
                             <select
                                 value={selectedCategory}
                                 onChange={(e) => {
-                                    setSelectedCategory(e.target.value as SnackCategory | '');
+                                    setSelectedCategory(e.target.value as ProductCategory | '');
                                     setPage(1);
                                 }}
                                 className="input md:w-48"
@@ -112,31 +112,31 @@ export default function SnacksPage() {
                         <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
                             {error}
                         </div>
-                    ) : snacks.length === 0 ? (
+                    ) : products.length === 0 ? (
                         <div className="text-center py-20">
                             <p className="text-neutral-600 text-lg">검색 결과가 없습니다.</p>
                         </div>
                     ) : (
                         <>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                {snacks.map((snack) => (
+                                {products.map((product) => (
                                     <Link
-                                        key={snack.id}
-                                        href={`/snacks/${snack.id}`}
+                                        key={product.id}
+                                        href={`/snacks/${product.id}`}
                                         className="card hover:scale-105 transition-transform"
                                     >
                                         <div className="card-body">
                                             <div className="flex items-start justify-between mb-3">
-                                                <span className="badge badge-primary">{snack.category}</span>
+                                                <span className="badge badge-primary">{product.category}</span>
                                             </div>
 
-                                            <h3 className="font-bold text-lg mb-2 line-clamp-2">{snack.name}</h3>
-                                            <p className="text-sm text-neutral-600 mb-3">{snack.manufacturer}</p>
+                                            <h3 className="font-bold text-lg mb-2 line-clamp-2">{product.title}</h3>
+                                            <p className="text-sm text-neutral-600 mb-3">{product.manufacturer}</p>
 
                                             <div className="flex items-center justify-between text-sm">
-                                                <span className="text-neutral-500">{snack.contentVolume}</span>
+                                                <span className="text-neutral-500">{product.contentVolume}</span>
                                                 <span className="font-bold text-primary-600">
-                                                    {snack.price.toLocaleString()}원
+                                                    {product.price.toLocaleString()}원
                                                 </span>
                                             </div>
 
@@ -145,22 +145,22 @@ export default function SnacksPage() {
                                                 <div className="flex items-center justify-between mb-1">
                                                     <span className="text-xs font-medium text-neutral-600">평가</span>
                                                     <span className="text-lg font-bold text-yellow-500">
-                                                        {snack.score}/10
+                                                        {product.score}/10
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-0.5 mb-2">
                                                     {[...Array(10)].map((_, i) => (
                                                         <span
                                                             key={i}
-                                                            className={`text-sm ${i < snack.score ? 'text-yellow-400' : 'text-neutral-200'}`}
+                                                            className={`text-sm ${i < product.score ? 'text-yellow-400' : 'text-neutral-200'}`}
                                                         >
                                                             ★
                                                         </span>
                                                     ))}
                                                 </div>
                                                 <p className="text-xs text-neutral-500">
-                                                    {snack.score >= 8 ? '✨ 구매 후 만족도 우수' :
-                                                        snack.score >= 4 ? '👍 맛과 가격 균형' :
+                                                    {product.score >= 8 ? '✨ 구매 후 만족도 우수' :
+                                                        product.score >= 4 ? '👍 맛과 가격 균형' :
                                                             '💭 구매 가치 평가'}
                                                 </p>
                                             </div>
