@@ -8,7 +8,7 @@ import { PairingSummary } from '@/types/pairing';
 import { useAuth } from '@/lib/hooks/useAuth';
 
 export default function PairingsPage() {
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const [pairings, setPairings] = useState<PairingSummary[]>([]);
     const [loading, setLoading] = useState(true);
     const [sortBy, setSortBy] = useState<'latest' | 'popular'>('latest');
@@ -76,9 +76,15 @@ export default function PairingsPage() {
                         <div>
                             <h1 className="text-3xl font-bold mb-2">제품 페어링</h1>
                             <p className="text-neutral-600">사용자들이 추천하는 맛있는 조합</p>
+                            {/* Debug info - remove later */}
+                            {process.env.NODE_ENV === 'development' && (
+                                <p className="text-xs text-neutral-400 mt-1">
+                                    Auth: {authLoading ? '로딩 중...' : user ? `로그인됨 (${user.email})` : '로그아웃'}
+                                </p>
+                            )}
                         </div>
 
-                        {user && (
+                        {!authLoading && user && (
                             <Link href="/pairings/create" className="btn btn-primary">
                                 + 페어링 만들기
                             </Link>
@@ -90,8 +96,8 @@ export default function PairingsPage() {
                         <button
                             onClick={() => setSortBy('latest')}
                             className={`px-4 py-2 rounded-lg font-medium transition ${sortBy === 'latest'
-                                    ? 'bg-primary-600 text-white'
-                                    : 'bg-white text-neutral-700 hover:bg-neutral-100'
+                                ? 'bg-primary-600 text-white'
+                                : 'bg-white text-neutral-700 hover:bg-neutral-100'
                                 }`}
                         >
                             최신순
@@ -99,8 +105,8 @@ export default function PairingsPage() {
                         <button
                             onClick={() => setSortBy('popular')}
                             className={`px-4 py-2 rounded-lg font-medium transition ${sortBy === 'popular'
-                                    ? 'bg-primary-600 text-white'
-                                    : 'bg-white text-neutral-700 hover:bg-neutral-100'
+                                ? 'bg-primary-600 text-white'
+                                : 'bg-white text-neutral-700 hover:bg-neutral-100'
                                 }`}
                         >
                             인기순
@@ -115,7 +121,7 @@ export default function PairingsPage() {
                     ) : pairings.length === 0 ? (
                         <div className="text-center py-12">
                             <p className="text-neutral-600 mb-4">아직 페어링이 없습니다</p>
-                            {user && (
+                            {!authLoading && user && (
                                 <Link href="/pairings/create" className="btn btn-primary">
                                     첫 페어링 만들기
                                 </Link>
@@ -173,8 +179,8 @@ export default function PairingsPage() {
                                                 handleLike(pairing.pairingId);
                                             }}
                                             className={`flex items-center gap-2 transition ${pairing.isLikedByUser
-                                                    ? 'text-red-500'
-                                                    : 'text-neutral-500 hover:text-red-500'
+                                                ? 'text-red-500'
+                                                : 'text-neutral-500 hover:text-red-500'
                                                 }`}
                                         >
                                             <span className="text-xl">
