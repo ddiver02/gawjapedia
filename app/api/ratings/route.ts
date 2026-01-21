@@ -17,18 +17,18 @@ const CreateRatingSchema = z.object({
  * 평점 목록 조회
  * 
  * 쿼리 파라미터:
- * - snack_id: 특정 간식의 평점만 조회
+ * - product_id: 특정 제품의 평점만 조회
  * - user_id: 특정 사용자의 평점만 조회
  * - limit: 최대 결과 수 (기본: 20)
  * - offset: 시작 위치 (기본: 0)
  * 
  * @example
- * GET /api/ratings?snack_id=1&limit=10
+ * GET /api/ratings?product_id=1&limit=10
  */
 export async function GET(request: NextRequest) {
     try {
         const searchParams = request.nextUrl.searchParams;
-        const snackId = searchParams.get('snack_id');
+        const productId = searchParams.get('product_id') || searchParams.get('snack_id'); // backward compat
         const userId = searchParams.get('user_id');
         const limit = parseInt(searchParams.get('limit') || '20');
         const offset = parseInt(searchParams.get('offset') || '0');
@@ -36,26 +36,22 @@ export async function GET(request: NextRequest) {
         const supabase = createClient();
 
         let query = supabase
-            .from('ratings')
+            .from('product_ratings')
             .select(`
-        id,
-        snack_id,
-        rating,
-        review,
-        created_at,
-        updated_at,
-        profiles:user_id (
-          username,
-          full_name,
-          avatar_url
-        )
-      `, { count: 'exact' })
+                rating_id,
+                product_id,
+                user_id,
+                price_rating,
+                quality_rating,
+                created_at,
+                updated_at
+            `, { count: 'exact' })
             .order('created_at', { ascending: false })
             .range(offset, offset + limit - 1);
 
         // 필터 적용
-        if (snackId) {
-            query = query.eq('snack_id', snackId);
+        if (productId) {
+            query = query.eq('product_id', productId);
         }
 
         if (userId) {
@@ -68,10 +64,24 @@ export async function GET(request: NextRequest) {
             throw error;
         }
 
+        // Transform to include average rating for backward compatibility
+        const transformedData = data?.map((rating: any) => ({
+            id: rating.rating_id,
+            snack_id: rating.product_id, // backward compat
+            product_id: rating.product_id,
+            user_id: rating.user_id,
+            rating: Math.round((rating.price_rating + rating.quality_rating) / 2), // average for backward compat
+            price_rating: rating.price_rating,
+            quality_rating: rating.quality_rating,
+            review: null, // Old ratings table had review, new one uses comments table
+            created_at: rating.created_at,
+            updated_at: rating.updated_at,
+        }));
+
         return NextResponse.json({
             success: true,
             data: {
-                ratings: data,
+                ratings: transformedData,
                 pagination: {
                     limit,
                     offset,
@@ -104,9 +114,9 @@ export async function GET(request: NextRequest) {
  * 요청 본문:
  * ```json
  * {
- *   "snackId": "1",
- *   "rating": 5,
- *   "review": "정말 맛있어요!"
+ *   "productId": "1",
+ *   "priceRating": 4,
+ *   "qualityRating": 5
  * }
  * ```
  */
@@ -130,75 +140,81 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // 요청 본문 파싱 및 검증
         const body = await request.json();
-        const validationResult = CreateRatingSchema.safeParse(body);
+        const productId = body.productId || body.snackId; // backward compat
+        const priceRating = body.priceRating || body.rating; // backward compat
+        const qualityRating = body.qualityRating || body.rating; // backward compat
 
-        if (!validationResult.success) {
+        if (!productId || !priceRating || !qualityRating) {
             return NextResponse.json(
                 {
                     success: false,
                     error: {
-                        message: '잘못된 요청 형식입니다',
+                        message: '필수 필드가 누락되었습니다 (productId, priceRating, qualityRating)',
                         code: 'VALIDATION_ERROR',
-                        details: validationResult.error.errors,
                     },
                 },
                 { status: 400 }
             );
         }
 
-        const { snackId, rating, review } = validationResult.data;
-
-        // 평점 생성
-        const { data, error } = await supabase
-            .from('ratings')
-            .insert({
-                user_id: user.id,
-                snack_id: snackId,
-                rating,
-                review: review || null,
-            })
-            .select(`
-        id,
-        snack_id,
-        rating,
-        review,
-        created_at,
-        profiles:user_id (
-          username,
-          full_name
-        )
-      `)
+        // Check for existing rating
+        const { data: existingRating } = await supabase
+            .from('product_ratings')
+            .select('rating_id')
+            .eq('product_id', productId)
+            .eq('user_id', user.id)
             .single();
 
-        if (error) {
-            // 중복 오류 처리 (한 사용자가 같은 간식에 이미 평가한 경우)
-            if (error.code === '23505') {
-                return NextResponse.json(
-                    {
-                        success: false,
-                        error: {
-                            message: '이미 이 간식에 대한 평가를 작성하셨습니다. 수정하시려면 PUT 요청을 사용하세요.',
-                            code: 'DUPLICATE_RATING',
-                        },
-                    },
-                    { status: 409 }
-                );
-            }
+        let result;
 
-            throw error;
+        if (existingRating) {
+            // Update existing rating
+            const { data, error } = await supabase
+                .from('product_ratings')
+                .update({
+                    price_rating: priceRating,
+                    quality_rating: qualityRating,
+                    updated_at: new Date().toISOString(),
+                })
+                .eq('rating_id', existingRating.rating_id)
+                .select()
+                .single();
+
+            if (error) throw error;
+            result = data;
+        } else {
+            // Create new rating
+            const { data, error } = await supabase
+                .from('product_ratings')
+                .insert({
+                    user_id: user.id,
+                    product_id: productId,
+                    price_rating: priceRating,
+                    quality_rating: qualityRating,
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+            result = data;
         }
 
         return NextResponse.json(
             {
                 success: true,
                 data: {
-                    rating: data,
+                    rating: {
+                        id: result.rating_id,
+                        product_id: result.product_id,
+                        price_rating: result.price_rating,
+                        quality_rating: result.quality_rating,
+                        created_at: result.created_at,
+                    },
                 },
                 message: '평가가 등록되었습니다',
             },
-            { status: 201 }
+            { status: existingRating ? 200 : 201 }
         );
 
     } catch (error) {
