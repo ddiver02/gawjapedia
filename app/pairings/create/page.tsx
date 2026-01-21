@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Router, { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -11,7 +11,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 
 export default function CreatePairingPage() {
     const router = useRouter();
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -22,11 +22,10 @@ export default function CreatePairingPage() {
 
     // Redirect if not logged in
     useEffect(() => {
-        if (!user) {
-            alert('로그인이 필요합니다');
-            router.push('/login');
+        if (!authLoading && !user) {
+            router.push('/login?redirect=/pairings/create');
         }
-    }, [user]);
+    }, [user, authLoading, router]);
 
     useEffect(() => {
         if (searchQuery.length >= 2) {
@@ -130,6 +129,19 @@ export default function CreatePairingPage() {
 
     if (!user) {
         return null; // Will redirect
+    }
+
+    // Show loading while auth is being checked
+    if (authLoading) {
+        return (
+            <div className="min-h-screen flex flex-col">
+                <Header />
+                <main className="flex-1 flex items-center justify-center">
+                    <div className="spinner"></div>
+                </main>
+                <Footer />
+            </div>
+        );
     }
 
     return (
