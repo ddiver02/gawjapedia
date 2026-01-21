@@ -42,6 +42,14 @@ export default function Header() {
                         </Link>
 
                         <Link
+                            href="/pairings"
+                            className={`hover:text-primary-600 transition-colors ${isActive('/pairings') ? 'text-primary-600 font-semibold' : 'text-neutral-700'
+                                }`}
+                        >
+                            페어링
+                        </Link>
+
+                        <Link
                             href="/test"
                             className={`hover:text-primary-600 transition-colors ${isActive('/test') ? 'text-primary-600 font-semibold' : 'text-neutral-700'
                                 }`}
