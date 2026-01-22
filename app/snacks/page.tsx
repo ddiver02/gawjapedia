@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import ProductCard from '@/components/ProductCard';
 import { Product, ProductCategory } from '@/types/product';
 
 export default function SnacksPage() {
