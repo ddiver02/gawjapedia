@@ -110,63 +110,38 @@ export default function SnacksPage() {
                             <div className="spinner"></div>
                         </div>
                     ) : error ? (
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
-                            {error}
+                        <div className="text-center py-20">
+                            <p className="text-red-600 mb-4">{error}</p>
+                            <button
+                                onClick={() => fetchProducts()}
+                                className="btn btn-primary"
+                            >
+                                다시 시도
+                            </button>
                         </div>
                     ) : products.length === 0 ? (
                         <div className="text-center py-20">
-                            <p className="text-neutral-600 text-lg">검색 결과가 없습니다.</p>
+                            <p className="text-neutral-600 mb-4">검색 결과가 없습니다.</p>
+                            <button
+                                onClick={() => {
+                                    setSearchQuery('');
+                                    setSelectedCategory('');
+                                    setPage(1);
+                                }}
+                                className="btn btn-outline"
+                            >
+                                필터 초기화
+                            </button>
                         </div>
                     ) : (
                         <>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                                 {products.map((product) => (
-                                    <Link
+                                    <ProductCard
                                         key={product.id}
-                                        href={`/snacks/${product.id}`}
-                                        className="card hover:scale-105 transition-transform"
-                                    >
-                                        <div className="card-body">
-                                            <div className="flex items-start justify-between mb-3">
-                                                <span className="badge badge-primary">{product.category}</span>
-                                            </div>
-
-                                            <h3 className="font-bold text-lg mb-2 line-clamp-2">{product.title}</h3>
-                                            <p className="text-sm text-neutral-600 mb-3">{product.manufacturer}</p>
-
-                                            <div className="flex items-center justify-between text-sm">
-                                                <span className="text-neutral-500">{product.contentVolume}</span>
-                                                <span className="font-bold text-primary-600">
-                                                    {product.price.toLocaleString()}원
-                                                </span>
-                                            </div>
-
-                                            {/* 10점 만점 별점 */}
-                                            <div className="mt-3 pt-3 border-t border-neutral-100">
-                                                <div className="flex items-center justify-between mb-1">
-                                                    <span className="text-xs font-medium text-neutral-600">평가</span>
-                                                    <span className="text-lg font-bold text-yellow-500">
-                                                        {product.score}/10
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center gap-0.5 mb-2">
-                                                    {[...Array(10)].map((_, i) => (
-                                                        <span
-                                                            key={i}
-                                                            className={`text-sm ${i < product.score ? 'text-yellow-400' : 'text-neutral-200'}`}
-                                                        >
-                                                            ★
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                                <p className="text-xs text-neutral-500">
-                                                    {product.score >= 8 ? '✨ 구매 후 만족도 우수' :
-                                                        product.score >= 4 ? '👍 맛과 가격 균형' :
-                                                            '💭 구매 가치 평가'}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </Link>
+                                        product={product}
+                                        showCategory={!selectedCategory}
+                                    />
                                 ))}
                             </div>
 
