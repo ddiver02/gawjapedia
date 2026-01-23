@@ -141,29 +141,6 @@ export default function SnackDetailPage() {
                                     </div>
                                 </div>
 
-                                {/* 전문가 평가 (10점 만점) */}
-                                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h3 className="font-bold text-lg">🏆 전문가 평가</h3>
-                                        <span className="text-3xl font-bold text-yellow-600">{product.score}/10</span>
-                                    </div>
-                                    <div className="flex items-center gap-1 mb-2">
-                                        {[...Array(10)].map((_, i) => (
-                                            <span
-                                                key={i}
-                                                className={`text-xl ${i < product.score ? 'text-yellow-400' : 'text-neutral-300'}`}
-                                            >
-                                                ★
-                                            </span>
-                                        ))}
-                                    </div>
-                                    <p className="text-sm text-neutral-600">
-                                        {product.score >= 8 ? '✨ 구매 후 만족도 우수' :
-                                            product.score >= 4 ? '👍 맛과 가격 균형' :
-                                                '💭 구매 가치 평가'}
-                                    </p>
-                                </div>
-
                                 {/* 사용자 평가 (5점 만점 이중 평점) */}
                                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
                                     <div className="flex items-center justify-between mb-4">
