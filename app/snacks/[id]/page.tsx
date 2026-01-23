@@ -33,6 +33,10 @@ export default function SnackDetailPage() {
     const [qualityRating, setQualityRating] = useState(3);
     const [submitting, setSubmitting] = useState(false);
 
+    // 댓글 작성
+    const [newComment, setNewComment] = useState('');
+    const [commentSubmitting, setCommentSubmitting] = useState(false);
+
     useEffect(() => {
         fetchProductDetail();
     }, [id]);
@@ -85,6 +89,62 @@ export default function SnackDetailPage() {
             console.error(err);
         } finally {
             setSubmitting(false);
+        }
+    };
+
+    const handleSubmitComment = async () => {
+        if (!user) {
+            alert('로그인이 필요합니다.');
+            return;
+        }
+
+        if (!newComment.trim()) {
+            alert('댓글 내용을 입력해주세요.');
+            return;
+        }
+
+        setCommentSubmitting(true);
+        try {
+            const response = await fetch(`/api/products/${id}/comments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ comment: newComment }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setNewComment('');
+                fetchProductDetail(); // 새로고침
+            } else {
+                alert(data.error.message || '댓글 작성에 실패했습니다.');
+            }
+        } catch (err) {
+            alert('서버 오류가 발생했습니다.');
+            console.error(err);
+        } finally {
+            setCommentSubmitting(false);
+        }
+    };
+
+    const handleDeleteComment = async (commentId: string) => {
+        if (!confirm('댓글을 삭제하시겠습니까?')) return;
+
+        try {
+            const response = await fetch(`/api/products/${id}/comments?comment_id=${commentId}`, {
+                method: 'DELETE',
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                fetchProductDetail(); // 새로고침
+            } else {
+                alert(data.error.message || '댓글 삭제에 실패했습니다.');
+            }
+        } catch (err) {
+            alert('서버 오류가 발생했습니다.');
+            console.error(err);
         }
     };
 
@@ -274,6 +334,77 @@ export default function SnackDetailPage() {
                                             <div className="text-lg font-bold">{product.nutrition.sugars} g</div>
                                         </div>
                                     </div>
+                                </div>
+
+                                {/* 댓글 섹션 */}
+                                <div className="mt-8">
+                                    <h3 className="font-bold text-lg mb-4">사용자 댓글 ({comments.length})</h3>
+
+                                    {/* 댓글 작성 폼 */}
+                                    {user ? (
+                                        <div className="bg-neutral-50 rounded-lg p-4 mb-6">
+                                            <textarea
+                                                value={newComment}
+                                                onChange={(e) => setNewComment(e.target.value)}
+                                                placeholder="댓글을 작성해주세요..."
+                                                className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+                                                rows={3}
+                                                maxLength={500}
+                                            />
+                                            <div className="flex items-center justify-between mt-2">
+                                                <span className="text-sm text-neutral-500">
+                                                    {newComment.length}/500
+                                                </span>
+                                                <button
+                                                    onClick={handleSubmitComment}
+                                                    disabled={commentSubmitting || !newComment.trim()}
+                                                    className="btn btn-primary btn-sm disabled:opacity-50"
+                                                >
+                                                    {commentSubmitting ? '작성 중...' : '댓글 작성'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-neutral-50 rounded-lg p-6 text-center mb-6">
+                                            <p className="text-neutral-600 mb-2">로그인하고 댓글을 작성해보세요</p>
+                                            <Link href="/login" className="text-primary-600 hover:underline">
+                                                로그인하기
+                                            </Link>
+                                        </div>
+                                    )}
+
+                                    {/* 댓글 목록 */}
+                                    {comments.length === 0 ? (
+                                        <p className="text-center text-neutral-500 py-8">
+                                            아직 댓글이 없습니다. 첫 댓글을 작성해보세요!
+                                        </p>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {comments.map((comment) => (
+                                                <div
+                                                    key={comment.comment_id}
+                                                    className="bg-white border border-neutral-200 rounded-lg p-4"
+                                                >
+                                                    <div className="flex items-start justify-between mb-2">
+                                                        <div className="flex-1">
+                                                            <p className="text-neutral-700">{comment.comment}</p>
+                                                        </div>
+                                                        {user?.id === comment.user_id && (
+                                                            <button
+                                                                onClick={() => handleDeleteComment(comment.comment_id)}
+                                                                className="text-sm text-red-600 hover:text-red-700 ml-4"
+                                                            >
+                                                                삭제
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-xs text-neutral-500">
+                                                        {new Date(comment.created_at).toLocaleString('ko-KR')}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
